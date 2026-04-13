@@ -1,0 +1,11 @@
+.env
+.venv/
+.idea/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.log
+smoke_*.xlsx
+~$*.xlsx
