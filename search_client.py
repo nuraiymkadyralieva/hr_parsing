@@ -1,4 +1,4 @@
-"""Serper API client for company HR-related page searches."""
+"""Serper API client for company finance director page searches."""
 
 from __future__ import annotations
 
@@ -14,12 +14,12 @@ class SearchAPIError(Exception):
 
 
 def build_search_queries(company_name: str) -> list[str]:
-    """Build the fixed MVP search queries for a company."""
+    """Build the fixed MVP finance director search queries for a company."""
     normalized_name = company_name.strip()
     return [
-        f'"{normalized_name}" "\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440 \u043f\u043e \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u0443"',
-        f'"{normalized_name}" "HR-\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440"',
-        f'"{normalized_name}" "\u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c \u043f\u043e \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u0443"',
+        f'"{normalized_name}" "\u0444\u0438\u043d\u0430\u043d\u0441\u043e\u0432\u044b\u0439 \u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440"',
+        f'"{normalized_name}" "\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440 \u043f\u043e \u0444\u0438\u043d\u0430\u043d\u0441\u0430\u043c"',
+        f'"{normalized_name}" "CFO"',
     ]
 
 

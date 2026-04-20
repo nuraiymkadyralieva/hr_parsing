@@ -1,4 +1,4 @@
-"""Utilities for writing HR lookup results to a new Excel file."""
+"""Utilities for writing finance director lookup results to a new Excel file."""
 
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ from models import OutputRow
 OUTPUT_HEADERS: tuple[str, str, str, str] = (
     "Company",
     "RegistrationNumber",
-    "HR_Position",
-    "HR_FullName",
+    "Finance_Position",
+    "Finance_FullName",
 )
 
 
@@ -40,8 +40,8 @@ class OutputWriter:
                 [
                     row.company,
                     row.registration_number,
-                    row.hr_position,
-                    row.hr_full_name,
+                    row.finance_position,
+                    row.finance_full_name,
                 ]
             )
 

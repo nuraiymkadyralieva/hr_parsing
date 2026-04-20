@@ -1,15 +1,15 @@
-# HR Leader Lookup Project
+# Finance Director Lookup Project
 
 ## What It Does
 
-This project reads a source Excel file, searches public company pages with Serper, extracts HR leaders with DeepSeek, and creates a new output Excel file.
+This project reads a source Excel file, searches public company pages with Serper, extracts finance directors with DeepSeek, and creates a new output Excel file.
 
 The output file contains only these columns:
 
 - `Company`
 - `RegistrationNumber`
-- `HR_Position`
-- `HR_FullName`
+- `Finance_Position`
+- `Finance_FullName`
 
 ## Installation
 
@@ -46,9 +46,9 @@ The input Excel file must contain these columns:
 
 The script reads rows from the first worksheet and creates exactly one output row per input row.
 
-## If HR Is Not Found
+## If Finance Director Is Not Found
 
-If no HR leader is found for a company, the script still writes the row to the output file with empty values in:
+If no finance director is found for a company, the script still writes the row to the output file with empty values in:
 
-- `HR_Position`
-- `HR_FullName`
+- `Finance_Position`
+- `Finance_FullName`

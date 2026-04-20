@@ -105,7 +105,7 @@ class DeepSeekClient:
             "messages": [
                 {
                     "role": "system",
-                    "content": "You extract HR leaders from webpage text and return JSON only.",
+                    "content": "You extract finance directors from webpage text and return JSON only.",
                 },
                 {"role": "user", "content": prompt},
             ],

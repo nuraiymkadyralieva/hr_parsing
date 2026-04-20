@@ -1,4 +1,4 @@
-"""Shared models for the HR parser project."""
+"""Shared models for the finance director parser project."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
-class HRResult(BaseModel):
-    """Structured HR record extracted from model output."""
+class DirectorResult(BaseModel):
+    """Structured finance director record extracted from model output."""
 
     company_name: Optional[str] = None
     position: str
@@ -19,7 +19,7 @@ class HRResult(BaseModel):
 class DeepSeekResponseModel(BaseModel):
     """Container for parsed DeepSeek response results."""
 
-    results: list[HRResult] = Field(default_factory=list)
+    results: list[DirectorResult] = Field(default_factory=list)
 
 
 @dataclass(slots=True)
@@ -33,12 +33,12 @@ class InputCompanyRow:
 
 @dataclass(slots=True)
 class OutputRow:
-    """Single output workbook row with extracted HR data."""
+    """Single output workbook row with extracted finance director data."""
 
     company: str
     registration_number: str
-    hr_position: str
-    hr_full_name: str
+    finance_position: str
+    finance_full_name: str
 
 
 @dataclass(slots=True)
@@ -47,7 +47,7 @@ class ProcessingStats:
 
     total_rows: int = 0
     processed_rows: int = 0
-    found_hr: int = 0
+    found_director: int = 0
     empty_result: int = 0
     search_errors: int = 0
     fetch_errors: int = 0

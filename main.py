@@ -1,4 +1,4 @@
-"""Entry point for the HR leader lookup pipeline."""
+"""Entry point for the finance director lookup pipeline."""
 
 from __future__ import annotations
 
@@ -11,18 +11,18 @@ from deepseek_client import DeepSeekAPIError, DeepSeekClient
 from fetcher import PageFetcher
 from html_cleaner import clean_html_to_text, truncate_text
 from input_reader import InputReader
-from keyword_filter import extract_relevant_chunk, has_hr_keywords
+from keyword_filter import extract_relevant_chunk, has_finance_keywords
 from logger_setup import setup_logger
 from models import InputCompanyRow, OutputRow, ProcessingStats
 from output_writer import OutputWriter
 from prompt_builder import build_extraction_prompt
-from result_parser import extract_json_block, parse_hr_result
+from result_parser import extract_json_block, parse_director_result
 from search_client import SearchAPIError, SerperSearchClient, build_search_queries
 
 
 def parse_args() -> argparse.Namespace:
     """Parse CLI arguments."""
-    parser = argparse.ArgumentParser(description="Bulk HR leader parser")
+    parser = argparse.ArgumentParser(description="Bulk finance director parser")
     parser.add_argument("--input", required=True, help="Path to input .xlsx file")
     parser.add_argument("--output", required=True, help="Path to output .xlsx file")
     parser.add_argument("--limit", type=int, default=None, help="Optional row processing limit")
@@ -35,7 +35,7 @@ def run_pipeline(
     output_path: str,
     limit: int | None = None,
 ) -> None:
-    """Run the main HR extraction pipeline."""
+    """Run the main finance director extraction pipeline."""
     logger = setup_logger()
 
     reader = InputReader(input_path)
@@ -97,8 +97,8 @@ def process_company(
         company_row.company or company_row.registration_number,
     )
 
-    hr_position = ""
-    hr_full_name = ""
+    finance_position = ""
+    finance_full_name = ""
 
     try:
         search_queries = build_search_queries(company_row.company)
@@ -133,7 +133,7 @@ def process_company(
             if not cleaned_text:
                 continue
 
-            if not has_hr_keywords(cleaned_text):
+            if not has_finance_keywords(cleaned_text):
                 continue
 
             relevant_text = extract_relevant_chunk(cleaned_text)
@@ -152,17 +152,17 @@ def process_company(
                 logger.error("Parsing error for company '%s': JSON block not found", company_row.company)
                 continue
 
-            position, person_fio = parse_hr_result(raw_response)
+            position, person_fio = parse_director_result(raw_response)
             if position and person_fio:
-                hr_position = position
-                hr_full_name = person_fio
+                finance_position = position
+                finance_full_name = person_fio
                 break
 
             stats.parse_errors += 1
-            logger.error("Parsing error for company '%s': invalid HR result", company_row.company)
+            logger.error("Parsing error for company '%s': invalid finance director result", company_row.company)
 
-        if hr_position and hr_full_name:
-            stats.found_hr += 1
+        if finance_position and finance_full_name:
+            stats.found_director += 1
         else:
             stats.empty_result += 1
     except Exception as error:
@@ -172,8 +172,8 @@ def process_company(
             OutputRow(
                 company=company_row.company,
                 registration_number=company_row.registration_number,
-                hr_position=hr_position,
-                hr_full_name=hr_full_name,
+                finance_position=finance_position,
+                finance_full_name=finance_full_name,
             )
         )
         stats.processed_rows += 1
@@ -200,7 +200,7 @@ def log_stats(stats: ProcessingStats) -> None:
     logger.info("Processing finished")
     logger.info("total_rows=%s", stats.total_rows)
     logger.info("processed_rows=%s", stats.processed_rows)
-    logger.info("found_hr=%s", stats.found_hr)
+    logger.info("found_director=%s", stats.found_director)
     logger.info("empty_result=%s", stats.empty_result)
     logger.info("search_errors=%s", stats.search_errors)
     logger.info("fetch_errors=%s", stats.fetch_errors)

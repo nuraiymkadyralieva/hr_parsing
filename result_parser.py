@@ -6,16 +6,18 @@ import json
 
 from pydantic import ValidationError
 
-from models import DeepSeekResponseModel, HRResult
+from models import DeepSeekResponseModel, DirectorResult
 
 
 POSITION_PRIORITY: dict[str, int] = {
-    "директор по персоналу": 1,
-    "hr-директор": 2,
-    "директор по управлению персоналом": 3,
-    "head of hr": 4,
-    "director of hr": 5,
-    "руководитель по персоналу": 6,
+    "\u0444\u0438\u043d\u0430\u043d\u0441\u043e\u0432\u044b\u0439 \u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440": 1,
+    "\u0444\u0438\u043d\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440": 2,
+    "\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440 \u043f\u043e \u0444\u0438\u043d\u0430\u043d\u0441\u0430\u043c": 3,
+    "chief financial officer": 4,
+    "cfo": 5,
+    "finance director": 6,
+    "head of finance": 7,
+    "financial director": 8,
 }
 
 
@@ -44,12 +46,12 @@ def normalize_text(value: str) -> str:
     return " ".join(cleaned_value.split())
 
 
-def pick_best_result(results: list[HRResult]) -> HRResult | None:
-    """Pick the best HR result based on position priority."""
+def pick_best_result(results: list[DirectorResult]) -> DirectorResult | None:
+    """Pick the best finance director result based on position priority."""
     if not results:
         return None
 
-    def sort_key(item: HRResult) -> tuple[int, str]:
+    def sort_key(item: DirectorResult) -> tuple[int, str]:
         normalized_position = normalize_text(item.position).lower()
         priority = POSITION_PRIORITY.get(normalized_position, 999)
         return (priority, normalized_position)
@@ -57,7 +59,7 @@ def pick_best_result(results: list[HRResult]) -> HRResult | None:
     return min(results, key=sort_key)
 
 
-def parse_hr_result(raw_text: str) -> tuple[str | None, str | None]:
+def parse_director_result(raw_text: str) -> tuple[str | None, str | None]:
     """Parse raw DeepSeek output into `(position, person_fio)`."""
     json_block = extract_json_block(raw_text)
     if json_block is None:

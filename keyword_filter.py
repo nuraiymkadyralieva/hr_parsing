@@ -1,37 +1,37 @@
-"""Helpers for selecting text related to HR leadership."""
+"""Helpers for selecting text related to finance leadership."""
 
 from __future__ import annotations
 
-HR_KEYWORDS: list[str] = [
-    "hr",
-    "\u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b",
-    "\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440 \u043f\u043e \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u0443",
-    "hr-\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440",
-    "\u0443\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u0435 \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u043e\u043c",
-    "\u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c \u043f\u043e \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u0443",
-    "hr director",
-    "head of hr",
-    "director of hr",
-    "people director",
-    "human resources",
+FINANCE_KEYWORDS: list[str] = [
+    "\u0444\u0438\u043d\u0430\u043d\u0441\u043e\u0432\u044b\u0439 \u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440",
+    "\u0444\u0438\u043d\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440",
+    "\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440 \u043f\u043e \u0444\u0438\u043d\u0430\u043d\u0441\u0430\u043c",
+    "\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440 \u0444\u0438\u043d\u0430\u043d\u0441\u043e\u0432",
+    "\u0440\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c \u0444\u0438\u043d\u0430\u043d\u0441\u043e\u0432",
+    "\u0433\u043b\u0430\u0432\u043d\u044b\u0439 \u0444\u0438\u043d\u0430\u043d\u0441\u0438\u0441\u0442",
+    "cfo",
+    "chief financial officer",
+    "finance director",
+    "head of finance",
+    "financial director",
 ]
 
 
-def has_hr_keywords(text: str) -> bool:
-    """Check whether the text contains any HR-related keyword."""
+def has_finance_keywords(text: str) -> bool:
+    """Check whether the text contains any finance leadership keyword."""
     normalized_text = text.lower()
-    return any(keyword in normalized_text for keyword in HR_KEYWORDS)
+    return any(keyword in normalized_text for keyword in FINANCE_KEYWORDS)
 
 
 def extract_relevant_chunk(text: str, max_length: int = 3000) -> str:
-    """Return a bounded text chunk around the first HR keyword occurrence."""
+    """Return a bounded text chunk around the first finance keyword occurrence."""
     if max_length <= 0:
         return ""
 
     normalized_text = text.lower()
     first_index: int | None = None
 
-    for keyword in HR_KEYWORDS:
+    for keyword in FINANCE_KEYWORDS:
         index = normalized_text.find(keyword)
         if index == -1:
             continue

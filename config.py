@@ -1,4 +1,4 @@
-"""Application settings for the HR parser project."""
+"""Application settings for the finance director parser project."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Logger configuration helpers for the HR parser project."""
+"""Logger configuration helpers for the finance director parser project."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import logging
 
 def setup_logger() -> logging.Logger:
     """Create and configure the project logger without duplicate handlers."""
-    logger = logging.getLogger("hr_parser")
+    logger = logging.getLogger("finance_director_parser")
     logger.setLevel(logging.INFO)
 
     if logger.handlers:

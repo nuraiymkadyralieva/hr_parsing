@@ -1,20 +1,20 @@
-"""Prompt construction helpers for DeepSeek extraction."""
+"""Prompt construction helpers for DeepSeek finance director extraction."""
 
 from __future__ import annotations
 
-PROMPT_TEMPLATE = """Find one HR leader for the company based only on the page text below.
+PROMPT_TEMPLATE = """Find one finance director for the company based only on the page text below.
 
 Allowed roles:
-- директор по персоналу
-- HR-директор
-- руководитель по персоналу
-- директор по управлению персоналом
-- директор департамента по управлению персоналом
-- HR Director
-- Head of HR
-- Director of HR
-- People Director
-- Chief People Officer
+- финансовый директор
+- финдиректор
+- директор по финансам
+- директор финансов
+- руководитель финансов
+- Chief Financial Officer
+- CFO
+- Finance Director
+- Head of Finance
+- Financial Director
 
 Rules:
 - Use only the provided page text
@@ -22,7 +22,7 @@ Rules:
 - Return JSON only
 - Do not explain anything
 - If nothing relevant is found, return {{"results": []}}
-- If several candidates exist, return the best matching HR leader
+- If several candidates exist, return the best matching finance director
 - Preserve the person's name exactly as written in the page text
 - If the page contains a Russian full name with patronymic, prefer including the patronymic in person_fio
 - If patronymic is not present in the page text, still return the best available full name from the page text
@@ -48,5 +48,5 @@ Page text:
 
 
 def build_extraction_prompt(company_name: str, page_text: str) -> str:
-    """Build the extraction prompt for the DeepSeek API."""
+    """Build the finance director extraction prompt for the DeepSeek API."""
     return PROMPT_TEMPLATE.format(company_name=company_name, page_text=page_text)
