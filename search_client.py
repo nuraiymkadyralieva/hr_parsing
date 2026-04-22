@@ -14,12 +14,11 @@ class SearchAPIError(Exception):
 
 
 def build_search_queries(company_name: str) -> list[str]:
-    """Build the fixed MVP finance director search queries for a company."""
+    """Build finance director search queries from broad to fallback-specific."""
     normalized_name = company_name.strip()
     return [
+        f'"{normalized_name}" ("\u0444\u0438\u043d\u0430\u043d\u0441\u043e\u0432\u044b\u0439 \u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440" OR "\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440 \u043f\u043e \u0444\u0438\u043d\u0430\u043d\u0441\u0430\u043c" OR CFO)',
         f'"{normalized_name}" "\u0444\u0438\u043d\u0430\u043d\u0441\u043e\u0432\u044b\u0439 \u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440"',
-        f'"{normalized_name}" "\u0434\u0438\u0440\u0435\u043a\u0442\u043e\u0440 \u043f\u043e \u0444\u0438\u043d\u0430\u043d\u0441\u0430\u043c"',
-        f'"{normalized_name}" "CFO"',
     ]
 
 

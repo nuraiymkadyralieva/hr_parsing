@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from urllib.parse import urlparse
+
 import requests
 from tenacity import Retrying, retry_if_exception_type, stop_after_attempt, wait_fixed
 
@@ -12,6 +14,7 @@ DEFAULT_USER_AGENT = (
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/124.0.0.0 Safari/537.36"
 )
+BLOCKED_DOMAINS: set[str] = set()
 
 
 class FetchError(Exception):
@@ -29,6 +32,9 @@ class PageFetcher:
 
     def fetch(self, url: str) -> str | None:
         """Download a single page and return text or `None` on failure."""
+        if self._is_blocked_url(url):
+            return None
+
         retrying = Retrying(
             retry=retry_if_exception_type(FetchError),
             stop=stop_after_attempt(self.max_retries),
@@ -75,3 +81,14 @@ class PageFetcher:
         encoding = response.encoding or response.apparent_encoding or "utf-8"
         text = content.decode(encoding, errors="ignore").strip()
         return text or None
+
+    @staticmethod
+    def _is_blocked_url(url: str) -> bool:
+        """Return whether the URL should be skipped before a network request."""
+        hostname = urlparse(url).hostname
+        return hostname in BLOCKED_DOMAINS
+
+
+def is_blocked_url(url: str) -> bool:
+    """Return whether a URL belongs to a skipped domain."""
+    return PageFetcher._is_blocked_url(url)

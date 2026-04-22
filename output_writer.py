@@ -9,10 +9,10 @@ from openpyxl import Workbook
 from models import OutputRow
 
 OUTPUT_HEADERS: tuple[str, str, str, str] = (
-    "Company",
-    "RegistrationNumber",
-    "Finance_Position",
-    "Finance_FullName",
+    "Компания",
+    "Регистрационный номер",
+    "Должность",
+    "ФИО",
 )
 
 

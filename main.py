@@ -8,7 +8,7 @@ from typing import Iterable
 
 from config import Settings, load_settings
 from deepseek_client import DeepSeekAPIError, DeepSeekClient
-from fetcher import PageFetcher
+from fetcher import PageFetcher, is_blocked_url
 from html_cleaner import clean_html_to_text, truncate_text
 from input_reader import InputReader
 from keyword_filter import extract_relevant_chunk, has_finance_keywords
@@ -18,6 +18,9 @@ from output_writer import OutputWriter
 from prompt_builder import build_extraction_prompt
 from result_parser import extract_json_block, parse_director_result
 from search_client import SearchAPIError, SerperSearchClient, build_search_queries
+
+SAVE_EVERY_ROWS = 100
+MAX_EMPTY_FETCHES_PER_QUERY = 2
 
 
 def parse_args() -> argparse.Namespace:
@@ -73,6 +76,11 @@ def run_pipeline(
             deepseek_client=deepseek_client,
             stats=stats,
         )
+
+        if stats.processed_rows > 0 and stats.processed_rows % SAVE_EVERY_ROWS == 0:
+            writer.save()
+            logger.info("Intermediate output saved after %s rows", stats.processed_rows)
+
         time.sleep(settings.sleep_between_requests)
 
     writer.save()
@@ -101,16 +109,12 @@ def process_company(
     finance_full_name = ""
 
     try:
-        search_queries = build_search_queries(company_row.company)
-        collected_urls: list[str] = []
-
-        for query in search_queries:
+        for query_index, query in enumerate(build_search_queries(company_row.company)):
             try:
                 search_results = search_client.search(
                     query=query,
                     num_results=settings.top_search_results,
                 )
-                collected_urls.extend(search_results)
             except SearchAPIError as error:
                 stats.search_errors += 1
                 logger.error(
@@ -119,47 +123,23 @@ def process_company(
                     query,
                     error,
                 )
-
-        unique_urls = deduplicate_urls(collected_urls)[: settings.max_pages_per_company]
-
-        for url in unique_urls:
-            html = fetcher.fetch(url)
-            if not html:
-                stats.fetch_errors += 1
-                logger.error("Fetch error or empty response for URL: %s", url)
                 continue
 
-            cleaned_text = clean_html_to_text(html)
-            if not cleaned_text:
+            if not search_results:
                 continue
 
-            if not has_finance_keywords(cleaned_text):
-                continue
+            unique_urls = deduplicate_urls(search_results)[: settings.max_pages_per_company]
+            finance_position, finance_full_name = process_search_result_pages(
+                company_row=company_row,
+                urls=unique_urls,
+                settings=settings,
+                fetcher=fetcher,
+                deepseek_client=deepseek_client,
+                stats=stats,
+            )
 
-            relevant_text = extract_relevant_chunk(cleaned_text)
-            prompt_text = truncate_text(relevant_text, settings.max_text_length)
-            prompt = build_extraction_prompt(company_row.company, prompt_text)
-
-            try:
-                raw_response = deepseek_client.ask(prompt)
-            except DeepSeekAPIError as error:
-                stats.api_errors += 1
-                logger.error("DeepSeek error for company '%s': %s", company_row.company, error)
-                continue
-
-            if extract_json_block(raw_response) is None:
-                stats.parse_errors += 1
-                logger.error("Parsing error for company '%s': JSON block not found", company_row.company)
-                continue
-
-            position, person_fio = parse_director_result(raw_response)
-            if position and person_fio:
-                finance_position = position
-                finance_full_name = person_fio
+            if finance_position and finance_full_name:
                 break
-
-            stats.parse_errors += 1
-            logger.error("Parsing error for company '%s': invalid finance director result", company_row.company)
 
         if finance_position and finance_full_name:
             stats.found_director += 1
@@ -177,6 +157,67 @@ def process_company(
             )
         )
         stats.processed_rows += 1
+
+
+def process_search_result_pages(
+    company_row: InputCompanyRow,
+    urls: list[str],
+    settings: Settings,
+    fetcher: PageFetcher,
+    deepseek_client: DeepSeekClient,
+    stats: ProcessingStats,
+) -> tuple[str, str]:
+    """Process URLs from one search query and return the first found director."""
+    logger = setup_logger()
+    empty_fetches = 0
+
+    for url in urls:
+        if is_blocked_url(url):
+            logger.info("Skipped blocked URL: %s", url)
+            continue
+
+        html = fetcher.fetch(url)
+        if not html:
+            empty_fetches += 1
+            stats.fetch_errors += 1
+            logger.error("Fetch error or empty response for URL: %s", url)
+            if empty_fetches >= MAX_EMPTY_FETCHES_PER_QUERY:
+                logger.info(
+                    "Stopped checking current search results after %s empty fetches",
+                    empty_fetches,
+                )
+                break
+            continue
+
+        empty_fetches = 0
+        cleaned_text = clean_html_to_text(html)
+        if not cleaned_text:
+            continue
+
+        if not has_finance_keywords(cleaned_text):
+            continue
+
+        relevant_text = extract_relevant_chunk(cleaned_text)
+        prompt_text = truncate_text(relevant_text, settings.max_text_length)
+        prompt = build_extraction_prompt(company_row.company, prompt_text)
+
+        try:
+            raw_response = deepseek_client.ask(prompt)
+        except DeepSeekAPIError as error:
+            stats.api_errors += 1
+            logger.error("DeepSeek error for company '%s': %s", company_row.company, error)
+            continue
+
+        if extract_json_block(raw_response) is None:
+            stats.parse_errors += 1
+            logger.error("Parsing error for company '%s': JSON block not found", company_row.company)
+            continue
+
+        position, person_fio = parse_director_result(raw_response)
+        if position and person_fio:
+            return (position, person_fio)
+
+    return ("", "")
 
 
 def deduplicate_urls(urls: Iterable[str]) -> list[str]:
